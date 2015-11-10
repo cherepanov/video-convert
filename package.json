@@ -1,0 +1,26 @@
+{
+  "name": "video-upload",
+  "version": "0.0.1",
+  "description": "video upload and convert with ffmpeg",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "_start": "UPLOAD_TMP='./fs' NODE_ENV='production' node ./index.js",
+    "start": "UPLOAD_TMP='./fs' NODE_ENV='debug' node --debug ./index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "http://github.com/cherepanov/video-upload"
+  },
+  "author": "a@cherepanov.info",
+  "license": "GPL",
+  "dependencies": {
+    "multer": "*",
+    "express": "*",
+    "restify": "*",
+    "fluent-ffmpeg": "*",
+    "mkdirp": "*",
+    "open": "*",
+    "hashids": "*"
+  }
+}

@@ -1,0 +1,4 @@
+{
+  "maxSize": 100000,
+  "convert": "./bin/convert.sh"
+}
