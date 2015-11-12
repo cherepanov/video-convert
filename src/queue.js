@@ -5,13 +5,11 @@ let kue = require('kue');
 
 let queue;
 
-let processors = new Map();
-
 class Queue extends EventEmitter {
 	constructor(options, binPath, tmpPath) {
 		super();
 
-		this.queue = queue || kue.createQueue({
+		queue = queue || kue.createQueue({
 			prefix: 'converter',
 			redis: {
 				port: options.redis.port,
@@ -21,30 +19,17 @@ class Queue extends EventEmitter {
 		});
 	}
 
-	push(ns, job, process) {
+	push(ns, payload) {
 		return new Promise((resolve, reject) => {
-			let job = kue.create(ns, job);
-
-			processors.set(job, process);
-
+			let job = queue.create(ns, payload);
 			job.on('complete', resolve);
 			job.on('failed', reject);
 			job.save();
 		});
 	}
 
-	process(ns) {
-		this.queue.process(ns, 1, (job, done) => {
-			let process = processors.get(job);
-			process(job, (result) => {
-				processors.delete(job);
-				if(result) {
-					done(new Error('job failed'));
-				} else {
-					done();
-				}
-			});
-		});
+	process(ns, processor) {
+		queue.process(ns, 1, processor);
 	}
 }
 

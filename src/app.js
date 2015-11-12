@@ -18,7 +18,21 @@ class App {
 		this.converter = new Converter(this.options);
 		this.uploader = this._createUploader();
 
-		//this.queue.process();
+		this.queue.process('video', this._processVideo.bind(this));
+	}
+
+	_processVideo(job, done) {
+		let file = job.data.file;
+
+		this.converter
+				.process(file)
+				.then(() => {
+					done();
+				})
+				.catch((err) => {
+					done(err);
+				})
+		;
 	}
 
 	_createUploader() {
@@ -78,14 +92,13 @@ class App {
 
 			let file = req.file;
 
-			this.converter
-				.process(file)
+			this.queue
+				.push('video', { file: file })
 				.then(() => {
-					//let dest = [this.options.dest, file.id].join(PATH_SEP);
 					res.setHeader("Content-Type", "text/html");
 					res.end(`<img src="/img/${file.id}"/>`);
 				})
-				.catch((err) => {
+				.catch((e) => {
 					console.error(err);
 					res.sendStatus(500).end();
 				})
