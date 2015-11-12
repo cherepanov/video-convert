@@ -39,8 +39,9 @@ convert "$TMP"/"$OUT".gif -coalesce -reverse -quiet -layers OptimizePlus  -loop 
 
 mkdir -p "$DEST"
 mv "$TMP"/"$OUT"_r.gif "$DEST"/"$OUT".gif
+rm -rf "$TMP"
 
-rm "$IN"
-rm "$TMP"/"$OUT".pam
-rm "$TMP"/"$OUT".miff
-rm "$TMP"/"$OUT".gif
+#rm "$IN"
+#rm "$TMP"/"$OUT".pam
+#rm "$TMP"/"$OUT".miff
+#rm "$TMP"/"$OUT".gif

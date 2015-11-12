@@ -83,6 +83,12 @@ class App {
 		}
 	}
 
+	exPreview(req, res, next) {
+		let imgId = req.params['0'];
+		res.setHeader("Content-Type", "text/html");
+		res.end(`<img src="/img/${imgId}"/>`);
+	}
+
 	exUpload(req, res, next) {
 		this.uploader(req, res, (err) => {
 			if(err) {
@@ -95,12 +101,17 @@ class App {
 			this.queue
 				.push('video', { file: file })
 				.then(() => {
-					res.setHeader("Content-Type", "text/html");
-					res.end(`<img src="/img/${file.id}"/>`);
+					res
+						.redirect(`/preview${file.id}`)
+						.end()
+					;
 				})
 				.catch((e) => {
 					console.error(err);
-					res.sendStatus(500).end();
+					res
+						.sendStatus(500)
+						.end()
+					;
 				})
 			;
 		});
