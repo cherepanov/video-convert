@@ -3,79 +3,33 @@
 
 "use strict";
 
+const DEBUG = (process.env.NODE_ENV === 'development');
+
+console.log(process.env.NODE_ENV);
 
 let express = require("express");
-let multer = require("multer");
 let open = require('open');
-var extend = require('util')._extend;
+let extend = require('util')._extend;
 
-let config = require('./config.json');
+let App = require('./src/app');
 
-let Storage = require('./src/storage');
-let Converter = require('./src/converter');
-let Resolver = require('./src/resolver');
-let Reader = require('./src/reader');
-
-//TODO: validate paths
-let options = extend(config, {
-	tmp: process.env.UPLOAD_TMP,
-	dest: process.env.UPLOAD_TMP
+let options = extend(require('./config.json'), {
+	tmp: process.env.DIR_UPLOAD_TMP,
+	dest: process.env.DIR_STORAGE
 });
 
-let storage = new Storage(options);
-let uploader = multer({
-	storage: storage,
-	limits: {
-		fieldSize: options.maxSize,
-		files: 1,
-		parts: 1
-	},
-	fileFilter: (req, file, cb) => {
-		//TODO: check and remove
-		if(file.size > options.maxSize) {
-			throw new Error('excceed max file size');
-		}
-		//TODO: check mime
+console.log(options);
 
-		cb(null, true);
-	}
-});
+let srv = express();
+let app = new App(options);
 
-let app = express();
+//TODO: better method delegate
+srv.get('/img/*', app.exGetImage.bind(app));
+srv.post('/upload', app.exUpload.bind(app));
 
-app.use(express.static('./test'));
+DEBUG && srv.use(express.static('./test'));
 
-app.get('/img/*', (req, res, next) => {
-	let imgId = req.params['0'];
-	let path = (new Resolver).resolve(options.dest, imgId, 'anim_r.gif');
+srv.listen(8282);
 
-	try {
-		let reader = new Reader(path);
-		reader.on('ready', () => {
-			reader.pipe(res);
-		});
-	} catch(e) {
-		console.error(e);
-		res.sendStatus(404).end();
-	}
-});
+DEBUG && open('http://localhost:8282/');
 
-app.post('/upload', uploader.single('video'), (req, res, next) => {
-	let file = req.file;
-	let converter = new Converter(options.convert, file.dir);
-
-	converter
-			.process(file.path)
-			.then((path) => {
-				res.setHeader("Content-Type", "text/html");
-				res.end(`<img src="/img/${file.id}"/>`);
-			})
-			.catch((err) => {
-				console.error(err);
-				res.sendStatus(500).end();
-			})
-	;
-});
-
-app.listen(8282);
-open('http://localhost:8282/');

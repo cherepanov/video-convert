@@ -1,25 +1,27 @@
 "use strict";
 
 var fs = require('fs');
-var EventEmitter = require('events').EventEmitter;
 
-class Reader extends EventEmitter {
+class Reader {
     constructor(file) {
-        super();
-
         this.file = file;
 
-        fs.stat(file, (err, stats) => {
-            if(err || !stats.isFile()) {
-                throw new Error('file not found');
-            }
+        console.log(file);
+    }
 
-            this.stream = fs.createReadStream(file);
+    open() {
+        return new Promise((res, rej) => {
+            fs.stat(this.file, (err, stats) => {
+                if(err || !stats.isFile()) {
+                    rej('file not found');
+                    return;
+                }
 
-            this.emit('ready');
+                this.stream = fs.createReadStream(this.file);
+
+                res('ready');
+            });
         });
-
-        return this;
     }
 
     pipe(writable) {

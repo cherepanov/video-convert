@@ -1,27 +1,37 @@
 "use strict";
 
-var EventEmitter = require('events').EventEmitter;
-
-
-//TODO:
-//https://github.com/Automattic/kue/blob/master/examples/many.js
-//https://github.com/audreyt/node-webworker-threads
-
+let EventEmitter = require('events').EventEmitter;
 let exec = require('child_process').exec;
+let kue = require('kue');
+let path = require('path');
+
+const PATH_SEP = path.sep;
+const RESULT_BASE_NAME = 'anim';
 
 class Converter extends EventEmitter {
-    constructor(binPath, tmpPath) {
+    constructor(options) {
         super();
 
-        this.bin = binPath;
-        this.tmp = tmpPath;
+        this.options = options;
+        this.bin = options.converter.path;
+        this.tmp = options.tmp;
+        this.dest = options.dest;
+
+        this.queue = kue.createQueue({
+            prefix: 'converter',
+            redis: {
+                port: options.redis.port,
+                host: options.redis.host,
+                auth: options.redis.auth
+            }
+        });
     }
 
     process(file) {
-        //TODO: work scheduler
         let bin = this.bin,
-            tmp = this.tmp,
-            cmd = `${bin} -i ${file} -o anim -t ${tmp}`;
+            tmp = [this.tmp, file.id].join(PATH_SEP),
+            dest = [this.dest, file.id].join(PATH_SEP),
+            cmd = `${bin} -i ${file.path} -o ${RESULT_BASE_NAME} -t ${tmp} -d ${dest}`;
 
         return new Promise((res, rej) => {
             exec(cmd, (err, stdout, stderr) => {
@@ -30,7 +40,7 @@ class Converter extends EventEmitter {
                     return;
                 }
 
-                res(tmp + '/anim_r.gif');
+                res(dest + `/${RESULT_BASE_NAME}.gif`);
             });
         });
     }
