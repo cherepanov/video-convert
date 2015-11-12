@@ -28,7 +28,14 @@ esac
 shift
 done
 
-#TODO: exit codes
+error_trap() {
+    #rm -rf "$TMP"
+    echo "Error on line $1"
+    exit 100
+}
+
+trap 'error_trap $LINENO' ERR
+
 #TODO: ?pipes
 
 ffmpeg -i "$IN" -ss 00:00:5.0 -r 8 -vframes 32 -vbsf remove_extra -an -vcodec pam -f rawvideo -y "$TMP"/"$OUT".pam
@@ -37,11 +44,7 @@ convert "$TMP"/"$OUT".miff -ordered-dither o8x8,15,11,11 -depth 8 -colorspace sR
 convert "$TMP"/"$OUT".miff -ordered-dither o8x8,25,12,12 -depth 8 -colorspace sRGB +dither +remap -coalesce -deconstruct -layers RemoveDups -layers Optimize -delay 1x9 -identify "$TMP"/"$OUT".gif
 convert "$TMP"/"$OUT".gif -coalesce -reverse -quiet -layers OptimizePlus  -loop 0 "$TMP"/"$OUT"_r.gif
 
+
 mkdir -p "$DEST"
 mv "$TMP"/"$OUT"_r.gif "$DEST"/"$OUT".gif
 rm -rf "$TMP"
-
-#rm "$IN"
-#rm "$TMP"/"$OUT".pam
-#rm "$TMP"/"$OUT".miff
-#rm "$TMP"/"$OUT".gif
