@@ -1,14 +1,11 @@
 "use strict";
 
-let EventEmitter = require('events').EventEmitter;
 let kue = require('kue');
 
 let queue;
 
-class Queue extends EventEmitter {
+class Queue {
 	constructor(options, binPath, tmpPath) {
-		super();
-
 		queue = queue || kue.createQueue({
 			prefix: 'converter',
 			redis: {

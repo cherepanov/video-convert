@@ -28,7 +28,7 @@ srv.get('/img/*', app.exGetImage.bind(app));
 srv.get('/preview/*', app.exPreview.bind(app));
 srv.post('/upload', app.exUpload.bind(app));
 
-DEBUG && srv.use(express.static('./test'));
+/*DEBUG && */srv.use(express.static('./test'));
 
 srv.listen(8282);
 
